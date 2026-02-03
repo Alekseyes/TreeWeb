@@ -1,12 +1,16 @@
-﻿namespace TreeWeb.Models
+﻿using Microsoft.EntityFrameworkCore;
+using static TreeWeb.AppContext.TreeWebDbContext;
+
+namespace TreeWeb.Models
 {
+    [EntityTypeConfiguration(typeof(DirectoryConfiguration))]
     public class Directory
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Name { get; set; }
 
-        public int? ParentId { get; set; }
-        public Directory Parent { get; set; }
+        public long? ParentId { get; set; }
+        public Directory? Parent { get; set; }
         public ICollection<Directory> Children { get; set; } = new List<Directory>();
     }
 }

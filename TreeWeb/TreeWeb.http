@@ -1,6 +1,0 @@
-@TreeWeb_HostAddress = http://localhost:5169
-
-GET {{TreeWeb_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

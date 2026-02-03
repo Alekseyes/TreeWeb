@@ -1,3 +1,6 @@
+using TreeWeb.Endpoints;
+using TreeWeb.Extensions;
+using TreeWeb.Middleware;
 
 namespace TreeWeb
 {
@@ -5,17 +8,14 @@ namespace TreeWeb
     {
         public static void Main(string[] args)
         {
-
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
+            // Add services to the container.         
+            builder.AddServices();
+     
             var app = builder.Build();
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -25,12 +25,12 @@ namespace TreeWeb
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
 
-
-            app.MapControllers();
-
+            // Minimal API endopoints
+            app.AddAuthEndpoints(); // Для аутентификации
+            app.AddDirectoryEndpoints(); // Для работы с каталогами
+            
             app.Run();
         }
     }
