@@ -11,7 +11,7 @@ using TreeWeb.AppContext;
 namespace TreeWeb.Migrations
 {
     [DbContext(typeof(TreeWebDbContext))]
-    [Migration("20260203120931_Initial")]
+    [Migration("20260203211345_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -37,7 +37,8 @@ namespace TreeWeb.Migrations
                     b.HasKey("Id")
                         .HasName("TW_Directory_PK");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId", "Name")
+                        .IsUnique();
 
                     b.ToTable("TW_Directory", (string)null);
                 });

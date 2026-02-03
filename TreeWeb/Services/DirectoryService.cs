@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TreeWeb.Abstract;
 using TreeWeb.AppContext;
 using TreeWeb.Models.DTO;
+using Directory = TreeWeb.Models.Directory;
 
 namespace TreeWeb.Services
 {
@@ -32,22 +33,27 @@ namespace TreeWeb.Services
             _logger = logger;
         }
 
-        public async Task<(DirectoryDTO result, string error)> AddDirectoryAsync(DirectoryDTO directoryDTO)
+        public async Task<(DirectoryDTO? result, string? error)> AddDirectoryAsync(DirectoryDTO directoryDTO)
         {
-            var entity = new Models.Directory
+            var entity = new Directory
             {
                 Name = directoryDTO.Name,
                 ParentId = directoryDTO.ParentId
             };
 
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            var error = await ValidationCreate(directoryDTO);
+            if (error != null)
+            {
+                await transaction.DisposeAsync();
+                return (null, error);
+            }
 
             await _dbContext.Directories.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
             _logger.LogInformation("Создана директория: {Name}", entity.Name);
-            return (result: new DirectoryDTO(entity), null);
-            
+            return (result: new DirectoryDTO(entity), null);            
         }
 
         public async Task<bool> DeleteDirectoryAsync(long id)
@@ -81,17 +87,25 @@ namespace TreeWeb.Services
             return new DirectoryDTO(dir);
         }
 
-        public async Task<(DirectoryDTO result, string error)> UpdateDirectoryAsync(long id, DirectoryDTO dto)
+
+        /// <inheritdoc />
+        public async Task<(DirectoryDTO? result, string? error)> UpdateDirectoryAsync(long id, DirectoryDTO dto)
         {
             var dir = await _dbContext.Directories.FindAsync(id);
             if (dir == null) return (null,null);
-
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            var error = await ValidationUpdate(dir, dto);
+            if (error != null)
+            {
+                return (null, error);
+            }
+           
             string directoryTableName = _dbContext.Model.FindEntityType(typeof(TreeWeb.Models.Directory))?.GetTableName();
             if(directoryTableName == null)
             {
                 throw new SystemException("Нет таблицы для хранения каталогов");
             }
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            
 
             if (await IsCircularReferenceSql(dir.Id, dto.ParentId, directoryTableName))
             {
@@ -147,5 +161,45 @@ namespace TreeWeb.Services
             }
             return rootNodes;
         }
+
+        private async Task<string?> ValidationUpdate(Directory dir, DirectoryDTO dto)
+        {
+            
+            if (dir.ParentId != dto.ParentId && dto.ParentId != null)
+            {
+                var parentForUpdatedEntity = await _dbContext.Directories.FindAsync(dto.ParentId);
+                if (parentForUpdatedEntity == null)
+                {
+
+                    return $"Каталога с {dto.ParentId} не существует. Нельзя привязать текущий к нему";
+                }
+                if (await _dbContext.Directories.AnyAsync(d => (dir.Id == 0 || dir.Id > 0 && d.Id != dir.Id) && d.ParentId == dto.ParentId && d.Name == dto.Name))
+                {
+
+                    return $"Каталог с таким же название ({dto.Name}) уже существует в каталоге {parentForUpdatedEntity.Name}";
+                }
+            }
+            return null;
+        }
+
+        private async Task<string?> ValidationCreate(DirectoryDTO dto)
+        {            
+            Directory? parentForCreatedEntity = null;
+            if (dto.ParentId != null)
+            {
+                parentForCreatedEntity = await _dbContext.Directories.FindAsync(dto.ParentId);
+                if(parentForCreatedEntity == null)
+                {
+                    return $"Каталога с {dto.ParentId} не существует. Нельзя привязать текущий к нему";
+                }
+                
+            }
+            if( await _dbContext.Directories.AnyAsync(d => d.ParentId == dto.ParentId && d.Name == dto.Name))
+            {
+                return $"Каталог с таким же название ({dto.Name}) уже существует в каталоге {parentForCreatedEntity?.Name ?? "текущем"}";
+            }            
+            return null;
+        }
+
     }
 }

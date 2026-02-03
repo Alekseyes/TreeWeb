@@ -39,12 +39,6 @@ namespace TreeWeb.Services
             return (new UserDTO(user), null);
         }
 
-        private void ValidatePassword(string username, string password) {
-        
-        
-        
-        }
-
          public async Task<(UserDTO? user, string? error)> Register(string username, string password, string role)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);

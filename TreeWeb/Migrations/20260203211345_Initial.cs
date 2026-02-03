@@ -46,9 +46,10 @@ namespace TreeWeb.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TW_Directory_ParentId",
+                name: "IX_TW_Directory_ParentId_Name",
                 table: "TW_Directory",
-                column: "ParentId");
+                columns: new[] { "ParentId", "Name" },
+                unique: true);
         }
 
         /// <inheritdoc />

@@ -1,4 +1,5 @@
 ﻿using TreeWeb.Abstract;
+using TreeWeb.Filters;
 using TreeWeb.Models.DTO;
 
 namespace TreeWeb.Endpoints
@@ -12,8 +13,12 @@ namespace TreeWeb.Endpoints
             directoryGroup.MapGet("/export", GetDirectories);
             directoryGroup.MapGet("/{id}", GetDirectory);
             
-            directoryGroup.MapPost("", AddDirectory).RequireAuthorization(p => p.RequireRole("Admin"));
-            directoryGroup.MapPut("/{id}", UpdateDirectory);
+            directoryGroup.MapPost("", AddDirectory)
+                .RequireAuthorization(p => p.RequireRole("Admin"))
+                .AddEndpointFilter<ValidationFilter<DirectoryDTO>>();
+            directoryGroup.MapPut("/{id}", UpdateDirectory)
+                .RequireAuthorization(p => p.RequireRole("Admin"))
+                .AddEndpointFilter<ValidationFilter<DirectoryDTO>>();
             directoryGroup.MapDelete("/{id}", DeleteDirectory).RequireAuthorization(p => p.RequireRole("Admin"));           
         }
 

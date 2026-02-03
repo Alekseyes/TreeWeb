@@ -34,7 +34,8 @@ namespace TreeWeb.Migrations
                     b.HasKey("Id")
                         .HasName("TW_Directory_PK");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId", "Name")
+                        .IsUnique();
 
                     b.ToTable("TW_Directory", (string)null);
                 });

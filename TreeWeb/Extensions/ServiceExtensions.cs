@@ -7,6 +7,7 @@ using TreeWeb.Abstract;
 using TreeWeb.AppContext;
 using TreeWeb.Models;
 using TreeWeb.Services;
+using FluentValidation;
 
 namespace TreeWeb.Extensions
 {
@@ -72,6 +73,7 @@ namespace TreeWeb.Extensions
                 });
 
             builder.Services.AddAuthorization();
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
             builder.Services.AddScoped<IDirectoryService, DirectoryService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
         }
