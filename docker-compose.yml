@@ -1,0 +1,8 @@
+services:
+  treeweb:
+    image: ${DOCKER_REGISTRY-}treeweb
+    build:
+      context: .
+      dockerfile: TreeWeb/Dockerfile
+    environment:
+      - Jwt__Key=${JWT_SECRET_KEY}

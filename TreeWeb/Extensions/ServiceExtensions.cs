@@ -16,6 +16,16 @@ namespace TreeWeb.Extensions
         public static void AddServices(this IHostApplicationBuilder builder)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
+            var jwtKey = builder.Configuration["Jwt:Key"];
+            if (jwtKey == null)
+            {
+                throw new ArgumentNullException(nameof(jwtKey));
+            }
+
+            // Аутентификация JWT
+            var key = AuthOptions.GetSymmetricSecurityKey(jwtKey);
+            builder.Services.AddScoped<IAuthOptions, AuthOptions>();
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -53,8 +63,7 @@ namespace TreeWeb.Extensions
             builder.Services.AddDbContext<TreeWebDbContext>(opt =>
                 opt.UseSqlite("Data Source=tree.db"));
 
-            // Аутентификация JWT
-            var key = AuthOptions.GetSymmetricSecurityKey();
+            
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>

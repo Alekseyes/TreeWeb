@@ -1,3 +1,5 @@
 /TreeWeb/bin
 .vs
 obj
+*.env
+Debug

@@ -14,7 +14,7 @@ namespace TreeWeb.Endpoints
             app.MapPost("/api/register", Register).WithName("Register");
         }
 
-        private static async Task<IResult> Login(string userName, string password, IAuthService authService)
+        private static async Task<IResult> Login(string userName, string password, IAuthService authService, IAuthOptions options)
         {
            var (user,error) = await authService.Login(userName, password);
 
@@ -29,7 +29,7 @@ namespace TreeWeb.Endpoints
                     new Claim(ClaimTypes.Role, user.Role),
                 };
 
-            var creds = new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(options.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,
@@ -42,7 +42,7 @@ namespace TreeWeb.Endpoints
             return TypedResults.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
 
-        private static async Task<IResult> Register(string userName, string password, string role, IAuthService authService)
+        private static async Task<IResult> Register(string userName, string password, string role, IAuthService authService, IAuthOptions options)
         {
             var (user, error) = await authService.Register(userName, password, role);
             if(error != null)
@@ -57,7 +57,7 @@ namespace TreeWeb.Endpoints
                     new Claim(ClaimTypes.Role, user.Role),
                 };
 
-                var creds = new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256);
+                var creds = new SigningCredentials(options.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(
                     issuer: AuthOptions.ISSUER,
